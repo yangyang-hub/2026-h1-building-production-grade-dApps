@@ -2,7 +2,7 @@ import { getContract } from 'viem';
 import { publicClient, getWalletClient } from './viem';
 import StorageABI from '../abis/Storage.json';
 
-export const CONTRACT_ADDRESS = '0x962c0940d72E7Db6c9a5F81f1cA87D8DB2B82A23'; 
+export const CONTRACT_ADDRESS = '0x5CC307268a1393AB9A764A20DACE848AB8275c46'; 
 export const CONTRACT_ABI = StorageABI.abi;
 
 // Create a function to get a contract instance for reading
