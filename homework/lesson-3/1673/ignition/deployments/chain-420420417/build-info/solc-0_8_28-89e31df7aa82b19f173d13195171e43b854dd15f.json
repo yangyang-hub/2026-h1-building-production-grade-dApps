@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-89e31df7aa82b19f173d13195171e43b854dd15f",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/ERC20.sol": "project/contracts/ERC20.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/ERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract ERC20 {\n    string public name;\n    string public symbol;\n    uint8 public decimals = 18;\n    uint256 public totalSupply;\n\n    mapping(address => uint256) public balanceOf;\n    mapping(address => mapping(address => uint256)) public allowance;\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(\n        address indexed owner,\n        address indexed spender,\n        uint256 value\n    );\n\n    constructor(\n        string memory _name,\n        string memory _symbol,\n        uint256 _initialSupply\n    ) {\n        name = _name;\n        symbol = _symbol;\n        totalSupply = _initialSupply * 10 ** decimals;\n        balanceOf[msg.sender] = totalSupply;\n    }\n\n    function transfer(\n        address _to,\n        uint256 _value\n    ) public returns (bool success) {\n        require(balanceOf[msg.sender] >= _value, \"Insufficient balance\");\n        balanceOf[msg.sender] -= _value;\n        balanceOf[_to] += _value;\n        emit Transfer(msg.sender, _to, _value);\n        return true;\n    }\n\n    function approve(\n        address _spender,\n        uint256 _value\n    ) public returns (bool success) {\n        allowance[msg.sender][_spender] = _value;\n        emit Approval(msg.sender, _spender, _value);\n        return true;\n    }\n\n    function transferFrom(\n        address _from,\n        address _to,\n        uint256 _value\n    ) public returns (bool success) {\n        require(balanceOf[_from] >= _value, \"Insufficient balance\");\n        require(\n            allowance[_from][msg.sender] >= _value,\n            \"Insufficient allowance\"\n        );\n        balanceOf[_from] -= _value;\n        balanceOf[_to] += _value;\n        allowance[_from][msg.sender] -= _value;\n        emit Transfer(_from, _to, _value);\n        return true;\n    }\n}\n"
+      }
+    }
+  }
+}

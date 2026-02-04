@@ -1,0 +1,24 @@
+{
+  "name": "1673",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "check-balance": "tsx scripts/check-balance.ts",
+    "deploy": "pnpm hardhat ignition deploy ignition/modules/MiniSwap.ts",
+    "deploy:polkadot": "pnpm hardhat ignition deploy ignition/modules/MiniSwap.ts --network polkadotTestnet",
+    "test": "hardhat test",
+    "compile": "hardhat compile"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.0.7",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.2",
+    "@types/node": "^22.19.8",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.1.6",
+    "typescript": "~5.8.3",
+    "viem": "^2.45.1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}
