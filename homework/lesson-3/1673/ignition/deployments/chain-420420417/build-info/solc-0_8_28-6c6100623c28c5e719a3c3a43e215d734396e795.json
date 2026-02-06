@@ -1,0 +1,42 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-6c6100623c28c5e719a3c3a43e215d734396e795",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/MiniSwap.sol": "project/contracts/MiniSwap.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/ERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract ERC20 {\n    string public name;\n    string public symbol;\n    uint8 public decimals = 18;\n    uint256 public totalSupply;\n\n    mapping(address => uint256) public balanceOf;\n    mapping(address => mapping(address => uint256)) public allowance;\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(\n        address indexed owner,\n        address indexed spender,\n        uint256 value\n    );\n\n    constructor(\n        string memory _name,\n        string memory _symbol,\n        uint256 _initialSupply\n    ) {\n        name = _name;\n        symbol = _symbol;\n        totalSupply = _initialSupply * 10 ** decimals;\n        balanceOf[msg.sender] = totalSupply;\n    }\n\n    function transfer(\n        address _to,\n        uint256 _value\n    ) public returns (bool success) {\n        require(balanceOf[msg.sender] >= _value, \"Insufficient balance\");\n        balanceOf[msg.sender] -= _value;\n        balanceOf[_to] += _value;\n        emit Transfer(msg.sender, _to, _value);\n        return true;\n    }\n\n    function approve(\n        address _spender,\n        uint256 _value\n    ) public returns (bool success) {\n        allowance[msg.sender][_spender] = _value;\n        emit Approval(msg.sender, _spender, _value);\n        return true;\n    }\n\n    function transferFrom(\n        address _from,\n        address _to,\n        uint256 _value\n    ) public returns (bool success) {\n        require(balanceOf[_from] >= _value, \"Insufficient balance\");\n        require(\n            allowance[_from][msg.sender] >= _value,\n            \"Insufficient allowance\"\n        );\n        balanceOf[_from] -= _value;\n        balanceOf[_to] += _value;\n        allowance[_from][msg.sender] -= _value;\n        emit Transfer(_from, _to, _value);\n        return true;\n    }\n}\n"
+      },
+      "project/contracts/MiniSwap.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport \"./ERC20.sol\";\n\ncontract MiniSwap {\n    address public token0;\n    address public token1;\n    uint256 public reserve0;\n    uint256 public reserve1;\n    uint256 public totalSupply;\n    mapping(address => uint256) public balance;\n\n    constructor(address _token0, address _token1) {\n        token0 = _token0;\n        token1 = _token1;\n    }\n\n    function addLiquidity(\n        uint256 _amount0,\n        uint256 _amount1\n    ) external returns (uint256 shares) {\n        ERC20(token0).transferFrom(msg.sender, address(this), _amount0);\n        ERC20(token1).transferFrom(msg.sender, address(this), _amount1);\n\n        if (totalSupply == 0) {\n            shares = _sqrt(_amount0 * _amount1);\n        } else {\n            shares = _min(\n                (_amount0 * totalSupply) / reserve0,\n                (_amount1 * totalSupply) / reserve1\n            );\n        }\n\n        require(shares > 0, \"Insufficient liquidity\");\n        balance[msg.sender] += shares;\n        totalSupply += shares;\n        reserve0 += _amount0;\n        reserve1 += _amount1;\n    }\n\n    function _sqrt(uint256 y) internal pure returns (uint256 z) {\n        if (y > 3) {\n            z = y;\n            uint256 x = y / 2 + 1;\n            while (x < z) {\n                z = x;\n                x = (y / x + x) / 2;\n            }\n        } else if (y != 0) {\n            z = 1;\n        }\n    }\n\n    function _min(uint256 x, uint256 y) internal pure returns (uint256) {\n        return x < y ? x : y;\n    }\n\n    function removeLiquidity(\n        uint256 _shares\n    ) external returns (uint256 amount0, uint256 amount1) {\n        require(balance[msg.sender] >= _shares, \"Insufficient shares\");\n\n        amount0 = (_shares * reserve0) / totalSupply;\n        amount1 = (_shares * reserve1) / totalSupply;\n\n        require(amount0 > 0 && amount1 > 0, \"Insufficient liquidity\");\n\n        balance[msg.sender] -= _shares;\n        totalSupply -= _shares;\n        reserve0 -= amount0;\n        reserve1 -= amount1;\n\n        ERC20(token0).transfer(msg.sender, amount0);\n        ERC20(token1).transfer(msg.sender, amount1);\n    }\n\n    function swap(\n        address _tokenIn,\n        uint256 _amountIn\n    ) external returns (uint256 amountOut) {\n        require(_tokenIn == token0 || _tokenIn == token1, \"Invalid token\");\n        require(_amountIn > 0, \"Amount must be greater than 0\");\n\n        bool isToken0 = _tokenIn == token0;\n        (uint256 _reserve0, uint256 _reserve1) = isToken0\n            ? (reserve0, reserve1)\n            : (reserve1, reserve0);\n\n        ERC20(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);\n\n        uint256 _amountInWithFee = _amountIn * 997; // 0.3% fee\n        amountOut =\n            (_amountInWithFee * _reserve1) /\n            ((_reserve0 * 1000) + _amountInWithFee);\n\n        require(amountOut > 0, \"Insufficient output\");\n        require(amountOut < _reserve1, \"Insufficient liquidity\"); // Ensure we don't exceed reserve\n\n        if (isToken0) {\n            reserve0 += _amountIn;\n            reserve1 -= amountOut;\n            ERC20(token1).transfer(msg.sender, amountOut);\n        } else {\n            reserve1 += _amountIn;\n            reserve0 -= amountOut;\n            ERC20(token0).transfer(msg.sender, amountOut);\n        }\n    }\n\n    function getReserves()\n        external\n        view\n        returns (uint256 _reserve0, uint256 _reserve1)\n    {\n        return (reserve0, reserve1);\n    }\n}\n"
+      }
+    }
+  }
+}
