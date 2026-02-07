@@ -1,0 +1,24 @@
+{
+    "name": "lesson-4-1891",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "compile": "hardhat compile",
+        "deploy": "hardhat run scripts/deployProxy.ts --network polkadotTestNet",
+        "upgrade": "hardhat run scripts/upgradeProxy.ts --network polkadotTestNet",
+        "read": "hardhat run scripts/readStorage.ts --network polkadotTestNet"
+    },
+    "dependencies": {
+        "@nomicfoundation/hardhat-ethers": "^4.0.4",
+        "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.2",
+        "@openzeppelin/contracts": "^5.4.0",
+        "@openzeppelin/contracts-upgradeable": "^5.4.0",
+        "@openzeppelin/hardhat-upgrades": "^3.0.0",
+        "dotenv": "^16.6.1",
+        "ethers": "^6.16.0",
+        "hardhat": "^3.1.3",
+        "typescript": "~5.9.3",
+        "@types/node": "^22.19.6"
+    }
+}
